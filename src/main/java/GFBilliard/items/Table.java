@@ -8,13 +8,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class Table implements Drawable, ConfigReader.ConfigItem {
-    private final Rectangle shape;
+    private Rectangle shape;
 
-    public final double[] bounds = {0.0, 0.0};
+    public double[] bounds = {0.0, 0.0};
 
-    public Table(double canvasDimX, double canvasDimY, String color) {
+    public double friction = 1.0;
+
+    public Table(double canvasDimX, double canvasDimY, String color, double friction) {
         this.shape = new Rectangle(0, 0, canvasDimX, canvasDimY);
         this.shape.setFill(Color.valueOf(color));
+        this.friction = friction;
         bounds[0] = canvasDimX;
         bounds[1] = canvasDimY;
     }
@@ -27,5 +30,10 @@ public class Table implements Drawable, ConfigReader.ConfigItem {
     @Override
     public void addToGroup(ObservableList<Node> group) {
         group.add(this.shape);
+    }
+
+    @Override
+    public void removeFromGroup(ObservableList<Node> group) {
+        group.remove(this.shape);
     }
 }

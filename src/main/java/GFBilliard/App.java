@@ -24,7 +24,8 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         // ConfigReader.parse("src/main/resources/config.json");
         ConfigReader configReader = new ConfigReader();
-        Table table = (Table)configReader.getConfig(ConfigReader.ConfigContent.table);
+        Table table = (Table)(configReader.getConfig(ConfigReader.ConfigContent.table)[0]);
+        Ball[] balls = (Ball[])configReader.getConfig(ConfigReader.ConfigContent.balls);
 
         Group root = new Group();
         Scene scene = new Scene(root);
@@ -47,7 +48,7 @@ public class App extends Application {
         stage.setResizable(false);
         Canvas canvas = new Canvas(table.bounds[0], table.bounds[1]);
         root.getChildren().add(canvas);
-        Game game = new Game(table, null, canvas);
+        Game game = new Game(table, balls, canvas);
         game.addDrawables(root);
 
         // setup frames

@@ -22,11 +22,11 @@ public class ConfigReader {
 	
 	}
 
-	public ConfigItem getConfig(ConfigContent content) {
+	public ConfigItem[] getConfig(ConfigContent content) {
 		return getConfig("src/main/resources/config.json", content);
 	}
 
-	public ConfigItem getConfig(String path, ConfigContent content) {
+	public ConfigItem[] getConfig(String path, ConfigContent content) {
 		JSONParser parser = new JSONParser();
 		try {
 			Object object = parser.parse(new FileReader(path));
@@ -51,7 +51,7 @@ public class ConfigReader {
 				// This is a double which should affect the rate at which the balls slow down
 				Double tableFriction = (Double) jsonTable.get("friction");
 	
-				return new Table(tableX, tableY, tableColour);
+				return new Table[]{new Table(tableX, tableY, tableColour, tableFriction)};
 				
 				case balls:
 				// reading the "Balls" section:
@@ -60,26 +60,31 @@ public class ConfigReader {
 				// reading the "Balls: ball" array:
 				JSONArray jsonBallsBall = (JSONArray) jsonBalls.get("ball");
 	
+				Ball[] balls = new Ball[jsonBallsBall.size()];
+				int i = 0;
 				// reading from the array:
 				for (Object obj : jsonBallsBall) {
 					JSONObject jsonBall = (JSONObject) obj;
 	
 					// the ball colour is a String
-					// TODO: String colour =
+					String ballColour = (String) jsonBall.get("colour");
 	
 					// the ball position, velocity, mass are all doubles
 					Double positionX = (Double) ((JSONObject) jsonBall.get("position")).get("x");
-					// TODO: Double positionY =
+					Double positionY = (Double) ((JSONObject) jsonBall.get("position")).get("y");
 	
-					// TODO: Double velocityX =
-					// TODO: Double velocityY =
+					Double velocityX = (Double) ((JSONObject) jsonBall.get("velocity")).get("x");
+					Double velocityY = (Double) ((JSONObject) jsonBall.get("velocity")).get("y");
 	
 					Double mass = (Double) jsonBall.get("mass");
 	
-					// TODO: delete me, this is just a demonstration:
-					System.out.println("Ball x: " + positionX + ", mass: " + mass);
+					balls[i++] = new Ball.Builder(positionX, positionY, ballColour)
+					.setVelocity(new double[]{velocityX, velocityY})
+					.setMass(mass)
+					.build();
+
 				}
-				break;
+				return balls;
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

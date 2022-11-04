@@ -9,13 +9,108 @@ import javafx.scene.shape.Circle;
 
 public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
     private static final double RASIUS = 15.0;
-    private final Circle shape;
+    private Circle shape;
 
-    private final double[] velocity = {0.0, 0.0};
+    private double[] startingPosition = {0.0, 0.0};
+    private double[] velocity = {0.0, 0.0};
+    private double mass = 0.0;
+    public int life = 1;
 
-    public Ball(double xPos, double yPos) {
-        this.shape = new Circle(xPos, yPos, RASIUS);
-        this.shape.setFill(Color.valueOf("blue"));
+    private FallIntoHole fall;
+
+    private Ball(Builder builder) {
+        this.shape = builder.shape;
+        this.startingPosition = builder.startingPosition;
+        this.velocity = builder.velocity;
+        this.mass = builder.mass;
+        this.life = builder.life;
+        this.fall = builder.fall;
+    }
+
+    public FallIntoHole.StrategyResult fallIntoHole() {
+        FallIntoHole.StrategyResult res = fall.doFall();
+        if (res == FallIntoHole.StrategyResult.decraseLife) {
+            life--;
+            if (life == 0) {
+                res = FallIntoHole.StrategyResult.goal;
+            } else {
+                reset();
+            }
+        }
+        return res;
+    }
+
+    private void reset() {
+        setXPos(startingPosition[0]);
+        setYPos(startingPosition[1]);
+        setXVel(0.0);
+        setYVel(0.0);
+    }
+
+    public static class Builder {
+        private Circle shape;
+        private double[] startingPosition = {0.0, 0.0};
+        private double[] velocity = {0.0, 0.0};
+        private double mass = 1.0;
+        private int life = 1;
+        private FallIntoHole fall;
+
+        public Builder(double posX, double posY, String color) {
+            this.shape = new Circle(posX, posY, RASIUS);
+            this.shape.setFill(Color.valueOf(color));
+            startingPosition[0] = posX;
+            startingPosition[1] = posY;
+
+            switch (color) {
+                case "white":
+                life = 0;
+                fall = new FallIntoHole(new WhiteBall());
+                break;
+                case "red":
+                life = 1;
+                fall = new FallIntoHole(new RedBall());
+                break;
+                case "blue":
+                life = 2;
+                fall = new FallIntoHole(new BlueBall());
+                break;
+            }
+        }
+
+        public Builder setVelocity(double[] velocity) {
+            this.velocity = velocity;
+            return this;
+        }
+
+        public Builder setMass(double mass) {
+            this.mass = mass;
+            return this;
+        }
+
+        public Ball build() {
+            return new Ball(this);
+        }
+    }
+
+    private class RedBall implements FallIntoHole.Strategy {
+        @Override
+        public FallIntoHole.StrategyResult doStrategy() {
+            return FallIntoHole.StrategyResult.decraseLife;
+        }
+    }
+
+    private class BlueBall implements FallIntoHole.Strategy {
+        @Override
+        public FallIntoHole.StrategyResult doStrategy() {
+            return FallIntoHole.StrategyResult.decraseLife;
+        }
+    }
+
+    private class WhiteBall implements FallIntoHole.Strategy {
+        @Override
+        public FallIntoHole.StrategyResult doStrategy() {
+            return FallIntoHole.StrategyResult.gameOver;
+        }
     }
 
     @Override
@@ -26,6 +121,11 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
     @Override
     public void addToGroup(ObservableList<Node> group) {
         group.add(this.shape);
+    }
+
+    @Override
+    public void removeFromGroup(ObservableList<Node> group) {
+        group.remove(this.shape);
     }
 
     @Override

@@ -33,6 +33,11 @@ public class Board implements Drawable, Movable, ConfigReader.ConfigItem {
         group.add(this.shape);
     }
 
+    @Override
+    public void removeFromGroup(ObservableList<Node> group) {
+        group.remove(this.shape);
+    }
+
     public void registerMouseAction() {
         this.shape.setOnMousePressed(e -> {
             dragRelativeX = e.getSceneX() - shape.getX();
