@@ -11,9 +11,9 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
     private static final double RASIUS = 15.0;
     private Circle shape;
 
-    private double[] startingPosition = {0.0, 0.0};
-    private double[] velocity = {0.0, 0.0};
-    private double mass = 0.0;
+    public double[] startingPosition = {0.0, 0.0};
+    public double[] velocity = {0.0, 0.0};
+    public double mass = 0.0;
     public int life = 1;
 
     private FallIntoHole fall;
@@ -92,21 +92,21 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
         }
     }
 
-    private class RedBall implements FallIntoHole.Strategy {
+    private static class RedBall implements FallIntoHole.Strategy {
         @Override
         public FallIntoHole.StrategyResult doStrategy() {
             return FallIntoHole.StrategyResult.decraseLife;
         }
     }
 
-    private class BlueBall implements FallIntoHole.Strategy {
+    private static class BlueBall implements FallIntoHole.Strategy {
         @Override
         public FallIntoHole.StrategyResult doStrategy() {
             return FallIntoHole.StrategyResult.decraseLife;
         }
     }
 
-    private class WhiteBall implements FallIntoHole.Strategy {
+    private static class WhiteBall implements FallIntoHole.Strategy {
         @Override
         public FallIntoHole.StrategyResult doStrategy() {
             return FallIntoHole.StrategyResult.gameOver;

@@ -1,7 +1,7 @@
 {
   "Table": {
     "colour": "green",
-    "friction": 1.0,
+    "friction": 0.2,
     "size": {
       "x": 600,
       "y": 300
@@ -16,8 +16,8 @@
           "y": 50.0
         },
         "velocity": {
-          "x": 0.0,
-          "y": 0.0
+          "x": 10.0,
+          "y": 5.0
         },
         "mass": 1.0
       },
