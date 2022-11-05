@@ -3,6 +3,8 @@ package GFBilliard;
 import GFBilliard.Items.Ball;
 import GFBilliard.Items.Board;
 import GFBilliard.Items.Table;
+import GFBilliard.Items.Hole;
+import GFBilliard.Items.FallIntoHole.StrategyResult;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -11,6 +13,7 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.util.Pair;
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Line;
 
 import java.util.List;
 
@@ -20,20 +23,75 @@ public class Game {
     private final Table table;
     private final Canvas canvas;
     private double[] canvasDim = {0.0, 0.0};
+    private Line line;
+    private Ball whiteBall;
+    private Hole[] holes;
+
+    private boolean aming = false;
 
     public Game(Table table, Ball[] balls, Canvas canvas) {
         this.table = table;
         this.balls = balls;
         this.canvas = canvas;
         canvasDim = table.bounds;
+        line = new Line();
+
+        line.setVisible(false);
+        for (Ball ball : balls) {
+            if (ball.life == 0) {
+                whiteBall = ball;
+                break;
+            }
+        }
+        whiteBall.getNode().setOnMousePressed(e -> {
+            Point2D whiteBallVelocity = new Point2D(whiteBall.getXVel(), whiteBall.getYVel());
+            if (whiteBallVelocity.magnitude() == 0) {
+                aming = true;
+                line.setStartX(whiteBall.getXPos());
+                line.setStartY(whiteBall.getYPos());
+                line.setEndX(e.getSceneX());
+                line.setEndY(e.getSceneY());
+                line.setVisible(true);
+            }
+        });
+        whiteBall.getNode().setOnMouseDragged(e -> {
+            line.setStartX(whiteBall.getXPos());
+            line.setStartY(whiteBall.getYPos());
+            line.setEndX(e.getSceneX());
+            line.setEndY(e.getSceneY());
+        });
+        whiteBall.getNode().setOnMouseReleased(e -> {
+            line.setVisible(false);
+            if (aming) {
+                Point2D startPos = new Point2D(e.getSceneX(), e.getSceneY());
+                Point2D endPos = new Point2D(whiteBall.getXPos(), whiteBall.getYPos());
+                Point2D velocity = endPos.subtract(startPos).multiply(0.1);
+                whiteBall.setXVel(velocity.getX());
+                whiteBall.setYVel(velocity.getY());
+            }
+            aming = false;
+        });
+
+        holes = new Hole[6];
+        double holeOffset = 8.0;
+        holes[0] = new Hole(holeOffset, holeOffset);
+        holes[1] = new Hole(table.bounds[0]/2.0, holeOffset);
+        holes[2] = new Hole(table.bounds[0]-holeOffset, holeOffset);
+        holes[3] = new Hole(holeOffset, table.bounds[1]-holeOffset);
+        holes[4] = new Hole(table.bounds[0]/2.0, table.bounds[1]-holeOffset);
+        holes[5] = new Hole(table.bounds[0]-holeOffset, table.bounds[1]-holeOffset);
     }
 
     public void addDrawables(Group root) {
         ObservableList<Node> groupChildren = root.getChildren();
         table.addToGroup(groupChildren);
+        for (Hole hole : holes) {
+            hole.addToGroup(groupChildren);
+        }
         for (Ball ball : balls) {
             ball.addToGroup(groupChildren);
         }
+        groupChildren.add(line);
         // board.addToGroup(groupChildren);
         // board.registerMouseAction();
     }
@@ -88,6 +146,23 @@ public class Game {
             if (ballBounds.getMinY() <= canvasBounds.getMinY() ||
                     ballBounds.getMaxY() >= canvasBounds.getMaxY()) {
                 ball.setYVel(-ball.getYVel());
+            }
+
+            for (Hole hole : holes) {
+                Bounds holeBounds = hole.getNode().getBoundsInLocal();
+                if (holeBounds.intersects(ballBounds)) {
+                    StrategyResult fallRes = ball.fallIntoHole();
+                    switch (fallRes) {
+                        case goal:
+                        System.out.println("goal");
+                        // todo delete ball
+                        break;
+                        case gameOver:
+                        System.out.println("game over");
+                        // todo game over
+                        break;
+                    }
+                }
             }
         }
         // Bounds ballBounds = ball.getNode().getBoundsInLocal();

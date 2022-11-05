@@ -12,7 +12,7 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
     private Circle shape;
 
     public double[] startingPosition = {0.0, 0.0};
-    public double[] velocity = {0.0, 0.0};
+    private double[] velocity = {0.0, 0.0};
     public double mass = 0.0;
     public int life = 1;
 
