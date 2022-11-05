@@ -2,6 +2,7 @@ package GFBilliard.Items;
 
 import GFBilliard.Items.Ball;
 
+// 不同球不同入洞行为的策略模式
 public class FallIntoHole {
     private Strategy strategy;
 

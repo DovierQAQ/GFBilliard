@@ -1,7 +1,6 @@
 package GFBilliard.Items;
 
 import GFBilliard.Items.Ball;
-import GFBilliard.Items.Board;
 import GFBilliard.Items.Table;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -78,6 +77,7 @@ public class ConfigReader {
 	
 					Double mass = (Double) jsonBall.get("mass");
 	
+					// 使用建造者模式创建球
 					balls[i++] = new Ball.Builder(positionX, positionY, ballColour)
 					.setVelocity(new double[]{velocityX, velocityY})
 					.setMass(mass)

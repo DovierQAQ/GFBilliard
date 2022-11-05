@@ -47,6 +47,7 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
         setYVel(0.0);
     }
 
+    // 建造者模式
     public static class Builder {
         private Circle shape;
         private double[] startingPosition = {0.0, 0.0};
@@ -92,6 +93,7 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
         }
     }
 
+    // 使用策略模式决定不球的行为
     private static class RedBall implements FallIntoHole.Strategy {
         @Override
         public FallIntoHole.StrategyResult doStrategy() {

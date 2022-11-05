@@ -1,7 +1,6 @@
 package GFBilliard;
 
 import GFBilliard.Items.Ball;
-import GFBilliard.Items.Board;
 import GFBilliard.Items.Table;
 import GFBilliard.Items.ConfigReader;
 import javafx.animation.KeyFrame;
@@ -16,17 +15,16 @@ import javafx.util.Duration;
 public class App extends Application {
 
     private static final String TITLE = "GFBilliard";
-    // private static final double DIM_X = 800.0;
-    // private static final double DIM_Y = 600.0;
     private static final double FRAMETIME = 1.0/60.0;
 
     @Override
     public void start(Stage stage) throws Exception {
-        // ConfigReader.parse("src/main/resources/config.json");
+        // 使用工厂模式读取配置文件
         ConfigReader configReader = new ConfigReader();
         Table table = (Table)(configReader.getConfig(ConfigReader.ConfigContent.table)[0]);
         Ball[] balls = (Ball[])configReader.getConfig(ConfigReader.ConfigContent.balls);
 
+        // 建立场景和窗口
         Group root = new Group();
         Scene scene = new Scene(root);
 
