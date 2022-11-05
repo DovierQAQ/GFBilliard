@@ -11,33 +11,58 @@ import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font; 
+import javafx.scene.text.FontPosture; 
+import javafx.scene.text.FontWeight; 
+import javafx.scene.text.Text;
 import javafx.util.Pair;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Line;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Game {
     private final double GRAVITY = 10.0 / 60.0;
-    private final Ball[] balls;
+    private final ArrayList<Ball> balls;
     private final Table table;
     private final Canvas canvas;
     private double[] canvasDim = {0.0, 0.0};
     private Line line;
+    private Text text;
     private Ball whiteBall;
     private Hole[] holes;
+    private Group root;
 
     private boolean aming = false;
 
+    private GameState state;
+
+    private enum GameState {
+        initializing, running, over
+    }
+
     public Game(Table table, Ball[] balls, Canvas canvas) {
+        state = GameState.initializing;
+
         this.table = table;
-        this.balls = balls;
+        
+        this.balls = new ArrayList<Ball>(Arrays.asList(balls));
+
         this.canvas = canvas;
         canvasDim = table.bounds;
         line = new Line();
 
+        text = new Text(table.bounds[0]/2 - 130, table.bounds[1]/2, "running");
+        text.setFill(Color.valueOf("yellow"));
+        text.setStrokeWidth(2.0);
+        text.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 50));
+        text.setVisible(false);
+
         line.setVisible(false);
-        for (Ball ball : balls) {
+        for (Ball ball : this.balls) {
             if (ball.life == 0) {
                 whiteBall = ball;
                 break;
@@ -80,9 +105,14 @@ public class Game {
         holes[3] = new Hole(holeOffset, table.bounds[1]-holeOffset);
         holes[4] = new Hole(table.bounds[0]/2.0, table.bounds[1]-holeOffset);
         holes[5] = new Hole(table.bounds[0]-holeOffset, table.bounds[1]-holeOffset);
+
+        state = GameState.running;
     }
 
     public void addDrawables(Group root) {
+        state = GameState.initializing;
+
+        this.root = root;
         ObservableList<Node> groupChildren = root.getChildren();
         table.addToGroup(groupChildren);
         for (Hole hole : holes) {
@@ -92,33 +122,35 @@ public class Game {
             ball.addToGroup(groupChildren);
         }
         groupChildren.add(line);
-        // board.addToGroup(groupChildren);
-        // board.registerMouseAction();
+        groupChildren.add(text);
+
+        state = GameState.running;
     }
 
     // tick() is called every frame, handle main game logic here
     public void tick() {
-        // ball.setYVel(ball.getYVel() + GRAVITY);
-        handleCollision();
-        for (Ball ball : balls) {
-            Point2D velocity = new Point2D(ball.getXVel(), ball.getYVel());
-            Point2D velocityDirection = velocity.normalize();
-            double frictionAcc = table.friction * GRAVITY;
-            if (velocity.magnitude() < frictionAcc) {
-                ball.setXVel(0.0);
-                ball.setYVel(0.0);
-            } else {
-                velocity = velocity.subtract(velocityDirection.multiply(frictionAcc));
-                ball.setXVel(velocity.getX());
-                ball.setYVel(velocity.getY());
+        if (state == GameState.running) {
+            handleCollision();
+            for (Ball ball : balls) {
+                Point2D velocity = new Point2D(ball.getXVel(), ball.getYVel());
+                Point2D velocityDirection = velocity.normalize();
+                double frictionAcc = table.friction * GRAVITY;
+                if (velocity.magnitude() < frictionAcc) {
+                    ball.setXVel(0.0);
+                    ball.setYVel(0.0);
+                } else {
+                    velocity = velocity.subtract(velocityDirection.multiply(frictionAcc));
+                    ball.setXVel(velocity.getX());
+                    ball.setYVel(velocity.getY());
+                }
+                ball.move();
             }
-            ball.move();
         }
-        // ball.move();
     }
 
     private void handleCollision() {
         Bounds canvasBounds = canvas.getBoundsInLocal();
+        ArrayList<Ball> ballsToRemove = new ArrayList<>();
         for (Ball ball : balls) {
             Bounds ballBounds = ball.getNode().getBoundsInLocal();
 
@@ -151,36 +183,34 @@ public class Game {
             for (Hole hole : holes) {
                 Bounds holeBounds = hole.getNode().getBoundsInLocal();
                 if (holeBounds.intersects(ballBounds)) {
+                    ObservableList<Node> groupChildren = root.getChildren();
                     StrategyResult fallRes = ball.fallIntoHole();
                     switch (fallRes) {
                         case goal:
                         System.out.println("goal");
                         // todo delete ball
+                        ball.removeFromGroup(groupChildren);
+                        ballsToRemove.add(ball);
                         break;
                         case gameOver:
-                        System.out.println("game over");
-                        // todo game over
+                        text.setText("YOU LOSE...");
+                        text.setVisible(true);
+                        ball.removeFromGroup(groupChildren);
+                        ballsToRemove.add(ball);
+                        state = GameState.over;
                         break;
                     }
                 }
             }
         }
-        // Bounds ballBounds = ball.getNode().getBoundsInLocal();
-        // Bounds boardBounds = board.getNode().getBoundsInLocal();
-        // if (ballBounds.intersects(boardBounds)) {
-        //     ball.setYVel(-ball.getYVel());
-        // }
-        // if (ballBounds.getMinX() <= canvasBounds.getMinX() ||
-        //         ballBounds.getMaxX() >= canvasBounds.getMaxX()) {
-        //     ball.setXVel(-ball.getXVel());
-        // }
-        // if (ballBounds.getMinY() <= canvasBounds.getMinY() ||
-        //         ballBounds.getMaxY() >= canvasBounds.getMaxY()) {
-        //     ball.setYVel(-ball.getYVel());
-        // }
-        // if (ballBounds.getMaxY() >= canvasBounds.getMaxY()) {
-        //     reset();
-        // }
+        for (Ball ball : ballsToRemove) {
+            balls.remove(ball);
+        }
+        if (balls.size() == 1 && balls.get(0) == whiteBall) {
+            text.setText("YOU WIN!!!");
+            text.setVisible(true);
+            state = GameState.over;
+        }
     }
 }
 
