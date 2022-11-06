@@ -47,6 +47,14 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
         setYVel(0.0);
     }
 
+    public double getMass() {
+        return mass;
+    }
+
+    public int getLife() {
+        return life;
+    }
+
     // 建造者模式
     public static class Builder {
         private Circle shape;

@@ -67,7 +67,7 @@ public class Game {
 
         for (Ball ball : this.balls) {
             // 白球生命值为0
-            if (ball.life == 0) {
+            if (ball.getLife() == 0) {
                 whiteBall = ball;
                 break;
             }
@@ -181,7 +181,7 @@ public class Game {
                         Point2D velocityA = new Point2D(collisionBall.getXVel(), collisionBall.getYVel());
                         Point2D posB = new Point2D(ball.getXPos(), ball.getYPos());
                         Point2D velocityB = new Point2D(ball.getXVel(), ball.getYVel());
-                        Pair<Point2D, Point2D> collisionResult = Physics.calculateCollision(posA, velocityA, collisionBall.mass, posB, velocityB, ball.mass);
+                        Pair<Point2D, Point2D> collisionResult = Physics.calculateCollision(posA, velocityA, collisionBall.getMass(), posB, velocityB, ball.getMass());
                         collisionBall.setXVel(collisionResult.getKey().getX());
                         collisionBall.setYVel(collisionResult.getKey().getY());
                         ball.setXVel(collisionResult.getValue().getX());
