@@ -11,10 +11,10 @@ public class Ball implements Movable, Drawable, ConfigReader.ConfigItem {
     private static final double RASIUS = 15.0;
     private Circle shape;
 
-    public double[] startingPosition = {0.0, 0.0};
+    private double[] startingPosition = {0.0, 0.0};
     private double[] velocity = {0.0, 0.0};
-    public double mass = 0.0;
-    public int life = 1;
+    private double mass = 0.0;
+    private int life = 1;
 
     private FallIntoHole fall;
 
